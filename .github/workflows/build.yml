@@ -7,8 +7,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Unzip project
-        run: unzip -q GallerySearch.zip -d proj
+        with:
+          fetch-depth: 0
+      - name: Unzip newest project zip
+        run: |
+          ZIP=$(for f in *.zip; do echo "$(git log -1 --format=%ct -- "$f") $f"; done | sort -n | tail -1 | cut -d' ' -f2-)
+          echo "Using $ZIP"
+          unzip -q "$ZIP" -d proj
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
