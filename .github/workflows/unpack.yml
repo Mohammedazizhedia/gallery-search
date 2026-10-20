@@ -8,9 +8,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Unpack
         run: |
-          Z=$(find . -name "*.zip" -not -path "./.git/*" | head -n 1)
+          Z=$(git -c core.quotepath=false log --name-only --diff-filter=AM --pretty=format: -- '*.zip' | grep -v '^$' | head -n 1)
           mkdir /tmp/x
           unzip -q "$Z" -d /tmp/x
           SRC=/tmp/x
