@@ -1,19 +1,14 @@
 name: Build APK
 on:
   push:
+    paths-ignore:
+      - '*.zip'
   workflow_dispatch:
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Unzip newest project zip
-        run: |
-          ZIP=$(for f in *.zip; do echo "$(git log -1 --format=%ct -- "$f") $f"; done | sort -n | tail -1 | cut -d' ' -f2-)
-          echo "Using $ZIP"
-          unzip -q "$ZIP" -d proj
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -22,14 +17,12 @@ jobs:
         with:
           gradle-version: 8.9
       - name: Download font
-        working-directory: proj
         run: |
           mkdir -p app/src/main/assets/fonts
           curl -fL -o app/src/main/assets/fonts/cairo.ttf "https://github.com/google/fonts/raw/main/ofl/cairo/Cairo%5Bslnt%2Cwght%5D.ttf" || echo "font skipped"
       - name: Build
-        working-directory: proj
         run: gradle assembleDebug --no-daemon
       - uses: actions/upload-artifact@v4
         with:
           name: GallerySearch-debug-apk
-          path: proj/app/build/outputs/apk/debug/*.apk
+          path: app/build/outputs/apk/debug/*.apk
