@@ -6,6 +6,7 @@ on:
   workflow_dispatch:
 permissions:
   contents: write
+  actions: write
 jobs:
   unpack:
     runs-on: ubuntu-latest
@@ -34,3 +35,8 @@ jobs:
           git add -A
           git commit -m "Unpack project" || echo "nothing to commit"
           git push
+       
+      - name: Trigger build
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run build.yml
