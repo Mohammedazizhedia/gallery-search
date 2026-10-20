@@ -1,5 +1,8 @@
 name: Unpack zip
 on:
+  push:
+    paths:
+      - '*.zip'
   workflow_dispatch:
 permissions:
   contents: write
@@ -12,7 +15,11 @@ jobs:
           fetch-depth: 0
       - name: Unpack
         run: |
-          Z=$(git -c core.quotepath=false log --name-only --diff-filter=AM --pretty=format: -- '*.zip' | grep -v '^$' | head -n 1)
+          Z=$(git diff --name-only --diff-filter=AM HEAD~1 HEAD -- '*.zip' | tail -n 1)
+          if [ -z "$Z" ]; then
+            Z=$(for f in *.zip; do n=$(echo "$f" | grep -o '[0-9]*' | tail -1); echo "${n:-0} $f"; done | sort -n | tail -n 1 | cut -d' ' -f2-)
+          fi
+          echo "Using $Z"
           mkdir /tmp/x
           unzip -q "$Z" -d /tmp/x
           SRC=/tmp/x
